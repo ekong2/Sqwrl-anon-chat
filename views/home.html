@@ -145,6 +145,16 @@
 		        "block";
 		    }
 	    });
+	    FB.api('/me/friends', function(response){
+	    	if (response) {
+	    		var friendIDs = [];
+	    		for (var i = 0; i < response.data.length; i++) {
+	    			friendIDs.push(response.data[i].id);
+	    		}
+	    		localStorage.setItem('fbFriendList', friendIDs);
+	    		console.log(friendIDs);
+	    	}
+	    });
 	  }
 
 	  FB.login(function(response) {

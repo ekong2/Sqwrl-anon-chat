@@ -31,7 +31,7 @@ module.exports = function(app,io){
 	app.get('/create', function(req,res){
 
 		// Generate unique id for the room
-		var id = Math.round((Math.random() * 1000000));
+		var id = 523995323452562;
 
 		// Redirect to the random room
 		res.redirect('/chat/'+id);
@@ -149,16 +149,78 @@ module.exports = function(app,io){
 // Initialize a new socket.io application, named 'waiting'
 	var waiting = io.of('/socket').on('connection', function (socket) {
 
+		//var faceID = [1, 2];
+		//var friendsID = [[4, 5, 2], [9]];
+		var faceID = [];
+		var friendsID = [];
+		var sockets = [];
+
 		// When the client emits the 'load' event, reply with the 
 		// number of people in this chat room
 
 		socket.on('load',function(data){
-			var room = findClientsSocket(io,data.waitingID,'/socket');
-			socket.id = data.id;
-			socket.join(data.waitingID);
+
+			//store the unique facebook id to the socket object that the client possess
+			socket.room = data.id;
+			socket.friendList = data.friendList;
+
+			//join the waitroom
+			socket.join(data.waitID);
+
+			//initialize the namespace
 			ns = io.of("/socket" ||"/");
+			if (ns) {
+				//iterate through all connected clients in this namespace, collect all facebook ids in an array
+				for (var id in ns.connected) {
+					if(data.id) {
+						//console.log(ns.connected[id].room);
+						//console.log("push complete "+ ns.connected[id].room);
+						/*var index = ns.connected[id].rooms.indexOf(data.id);
+						console.log(index);
+						console.log(ns.connected[id].room[0]);
+						console.log("data id" + data.id + "\n");
+						console.log("waiting id" + data.waitID);*/
+						var newPersonSocket = ns.connected[id];
+						var otherPersonSocket;
+
+						var newPersonId = ns.connected[id].room;
+						var newPersonFriendList = ns.connected[id].friendList;
+						//var matchedPerson = match(0, [3, 2], faceID, friendsID);
+						var matchedPerson = match(newPersonId, newPersonFriendList, faceID, friendsID);
+
+						if (matchedPerson) {
+							var matchedPersonIndex = faceID.indexOf(matchedPerson);
+							faceID.splice(matchedPersonIndex, 1);
+							friendsID.splice(matchedPersonIndex, 1);
+							console.log(data.id + " is matched to " + matchedPerson);
+							otherPersonSocket = sockets[matchedPersonIndex];
+							sockets.splice(matchedPersonIndex, 1);
+
+							//add both newPerson and matchedPerson into a chat room
+							var roomId = matchedPerson;
+							newPersonSocket.emit('matchFound', {room: roomId});
+							otherPersonSocket.emit('matchFound', {room: roomId});
+							//console.log(ns);
+						}
+						else {							
+							faceID.push(ns.connected[id].room);
+							friendsID.push(ns.connected[id].friendList);
+							sockets.push(ns.connected[id]);
+						}						
+					}
+				}
+			}
+
+			/*console.log(faceID.length);
+			for (var k = 0; k < friendsID.length; k++) {
+			console.log("fb list" + friendsID[k]);
+			}*/
+			
+			//matchingPeopleUp(faceID);
+			/*socket.leave(socket.room);
+
 			ns.connected[id].rooms[data.waitingID]
-			socket.emit('lol', {num: room.length});
+			socket.emit('lol', {num: room.length});*/
 		});
 	});
 };
@@ -183,5 +245,28 @@ function findClientsSocket(io,roomId, namespace) {
 	return res;
 }
 
-
+function match(newPersonId, newPersonFriendList, peopleList, friendList) {
+    if (!newPersonFriendList)
+    	return false;
+    for(var i = 0; i<peopleList.length; i++) {
+        //check 1st degree
+        if(newPersonFriendList.indexOf(peopleList[i]) > -1) {
+            //MATCH: newPerson and peopleList[i]
+            return peopleList[i];
+        }
+        else {
+        	var otherPersonsFriends = friendList[i];
+            for(var j = 0; j < newPersonFriendList.length; j++) {
+            	for (var k = 0; k < otherPersonsFriends.length; k++) {
+            		if(newPersonFriendList[j]== otherPersonsFriends[k]) {
+                     //MATCH: newPerson and peopleList[i]
+                    return peopleList[i];
+                }
+                }
+            	}
+            }
+            
+        }
+    return false;
+}
 

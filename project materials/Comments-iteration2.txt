@@ -1,0 +1,16 @@
+Group 5,
+
+First of all, I really like your application's clever name. And, also the presentation and HTML document. Here are a few suggestions:
+
+Your UML class diagram is missing certain portions of your application such as your UI.
+
+Also, you have not given any indication about how the UI is going to be built or designed, and how it interacts with Libraries.
+
+Since you mention you do not persist data, then how do you plan to maintain the blacklist? I would assume it could be the Facebook blocklist of a user, but I don't think that is what you are aiming for. It seems you might need some storage database for this.
+
+Your resubmitted activity diagram is better, but still does not use correct syntax.  Activity diagrams are not flowcharts: each opening diamond should be matched by a closing diamond.
+
+In your GUI sketches, the sketch 1 seems insufficient in specifying its role. Also, I think sketch 2 should come before sketch 1, as you might want the user to login before choosing filter options.
+
+Iteration 2 Grade: 94
+Iteration 1 Regrade: 87

@@ -1,0 +1,26 @@
+Group 5,
+
+You have a really nice web page setup, and you seem to mostly have a good idea about your implementation. Here are a suggestions for your group:
+
+Node.js and Spring MVC serve essentially the same purpose here, and you could benefit by looking deeper into their relevance for you. Preferences vary.
+
+Your Architecture section needs some work. You should be aware that for MySQL you would be handling your own database, but with parse all of that will be done for you. So, again choose based on your needs and relevance.
+
+Revealing of Identity must be part of your core features, atleast by Iteration 2. Also, as most of the basic functionality of your application should not be very hard to achieve, we expect atleast some of the extended features to be implemented.
+
+You could also have a Tag filter based on Gender, maybe?
+
+Just a slight detail, your 'End Chat Session' and 'Match Users' seem to have some extra bullets.
+
+You are missing an Activity Diagram, which was Required for Iteration 1.
+
+Revealed should not be a property of the User, but rather possibly of the Chat session. What I mean is, if Revealed was a property of the User then that user would be revealed for all the users, but from what I understand you want the identity to be revealed for users engaged in a particular chat session.
+
+Friends, and Blacklist should be self associations of the class User.
+
+The diamond should be a blank(empty) one, instead of the being black. This link gives a good description on Aggregation and Composition, http://aviadezra.blogspot.be/2009/05/uml-association-aggregation-composition.html
+
+Although you have some nice GUI sketches, there are some ambiguities for instance, what does 'List' refer to; is it a list of users online or list of chat sessions?
+
+Total Score: 85/100
+Resubmit Options: Activity diagram

@@ -5,7 +5,7 @@ $(function(){
 	// getting the id of the room from the url
 	var id = Number(window.location.pathname.match(/\/chat\/(\d+)$/)[1]);
 
-	$('#yourEmail').val(localStorage.getItem('userEmail'));
+	//$('#yourEmail').val(localStorage.getItem('userEmail'));
 	
 	// connect to the socket
 	var socket = io.connect('/socket');
@@ -124,6 +124,10 @@ $(function(){
 
 		else {
 			showMessage("tooManyPeople");
+			setTimeout(function(){ 
+					alert("Redirecting you to the homepage");
+					window.location = '/';
+			}, 3000);
 		}
 
 	});
@@ -155,6 +159,10 @@ $(function(){
 
 			showMessage("somebodyLeft", data);
 			chats.empty();
+			setTimeout(function(){ 
+					alert("Redirecting you to the homepage");
+					window.location = '/';
+			}, 3000);
 		}
 
 	});
@@ -164,6 +172,10 @@ $(function(){
 		if(data.boolean && name.length === 0) {
 
 			showMessage('tooManyPeople');
+			setTimeout(function(){ 
+					alert("Redirecting you to the homepage");
+					window.location = '/';
+			}, 3000);
 		}
 	});
 

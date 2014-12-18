@@ -1,0 +1,30 @@
+Group 5,
+
+It is encouraging to see that you have been able to gain familiarity
+with all of the relevant technologies needed for your project. The
+Facebook Gragh API seems to be quite well documented and you should
+be able to get a hang of it soon.
+
+Do you plan to continue using both Gravatar and Facebook api? Or did you
+decide to use Gravatar only till you are able to comfortably use Facebook.
+
+You do not seem to have much of the test cases set up as of right now. 
+Although in your home.html, you do have a simple test of the Graph API 
+to check for successful login, you should be looking into unit testing
+frameworks. I remember we were discussing about using one such testing 
+framework i.e QUnit for JavaScript. Please look into such tools for your 
+testing purposes. Using any such framework on the lines of JUnit would
+almost be a necessity as we go along with the development.
+
+Your goals on the future iterations look achievable. A suggestion here, 
+instead of just saying 'optimize the matching algorithms', it would be nice 
+to give a bit more details as to what you mean by this optmization. Does 
+it refer to the speed of matching? or optimizing for some quality factor 
+based on how compatible the match is, etc.?
+
+Your chat.js is somewhat lacking in comments.  Also, it seems like you have
+an OCP violation in the showMessage function of your chat page, for instance.
+Is there a reason for this?
+
+Total Score: 97/100
+

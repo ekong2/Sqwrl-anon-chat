@@ -38,6 +38,11 @@
 
 			<div class="infoWaiting">
 				<h2>Searching for a match...</h2>
+				<script>
+				/*setTimeout(function(){ 
+					window.location = '/create';
+				}, 3000);*/
+				</script>
 				<br/>
 
 			</div>
@@ -53,12 +58,17 @@
 		var socket2 = io.connect('/socket');
 
 		socket2.on('connect', function(){
-			socket2.emit('load', {waitID: 1, id: localStorage.getItem('facebookID')});
+			socket2.emit('load', {waitID: 1, id: localStorage.getItem('facebookID'),
+				friendList: localStorage.getItem('fbFriendList')});
 		});
 
-		socket2.on('lol', function(data){
+		socket2.on('testing', function(data){
 			console.log(data.num);
 			console.log("hello how are you?");
+		});
+
+		socket2.on("matchFound", function(data){
+			window.location = "/chat/"+data.room;
 		});
 	</script>
 
