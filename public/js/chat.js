@@ -37,6 +37,8 @@ $(function(){
 		hisEmail = $("#hisEmail"),
 		chatForm = $("#chatform"),
 		textarea = $("#message"),
+		revealButton = $("#reveal"),
+		revealText = $("#reveal-text"),
 		messageTimeSent = $(".timesent"),
 		chats = $(".chats");
 
@@ -44,6 +46,9 @@ $(function(){
 	var ownerImage = $("#ownerImage"),
 		leftImage = $("#leftImage"),
 		noMessagesImage = $("#noMessagesImage");
+
+	//counter to keep track of revelations
+	var revelationCounter = 0;
 
 
 	// on connection to server get the id of person's room
@@ -133,7 +138,7 @@ $(function(){
 	});
 
 	// Other useful 
-
+	var nameFlag;
 	socket.on('startChat', function(data){
 		console.log(data);
 		if(data.boolean && data.id == id) {
@@ -143,10 +148,12 @@ $(function(){
 			if(name === data.users[0]) {
 
 				showMessage("youStartedChatWithNoMessages",data);
+				nameFlag = data.users[0];
 			}
 			else {
 
 				showMessage("heStartedChatWithNoMessages",data);
+				nameFlag = data.users[1];
 			}
 
 			chatNickname.text(friend);
@@ -179,6 +186,7 @@ $(function(){
 		}
 	});
 
+	//create a normal message to display
 	socket.on('receive', function(data){
 
 		showMessage('chatStarted');
@@ -188,6 +196,58 @@ $(function(){
 			scrollToBottom();
 		}
 	});
+
+	//create a special message to indicate revelation
+	socket.on('receive2', function(data){
+		showMessage('chatStarted');
+
+		revelationCounter++;
+		if(data.msg.trim().length) {
+			createChatSpecialMessage(data.msg, data.user, data.img, moment());
+			scrollToBottom();
+		}
+		//receive the other person's data and save it to local storage
+		localStorage.setItem('otherLink', data.link);
+		localStorage.setItem('otherName', data.realName);
+		localStorage.setItem('otherPicture', data.picture);
+	});
+
+
+	socket.on('receive3', function(){
+		showMessage('chatStarted');
+		/*Async might lead to problems if the other user's counter hasnt updated yet..*/
+		/*could use the wait until function??*/
+		if(revelationCounter < 3) {
+			createChatFacebookMessage(localStorage.getItem('userName'), localStorage.getItem('otherName'),
+			localStorage.getItem('picture'), localStorage.getItem('otherPicture'), 
+			localStorage.getItem('profileLink'), localStorage.getItem('otherLink'));
+			scrollToBottom();
+		}
+	});
+
+	/*The reveal button*/
+	revealButton.one("click", (function(event) {
+
+		showMessage("chatStarted");
+
+		//Change color on reveal button
+		revealButton.css('background-color', '#1d8c07');
+		revealButton.css('cursor', 'default');
+		var approve = $('<h6>You have chosen to reveal yourself!</h6>');
+		//append text onto button
+		revealText.append(approve);
+		revelationCounter++;
+		//emit revelation event to routes.js
+		socket.emit("revelation", {counter: revelationCounter});
+		//create special message
+		createChatSpecialMessage(nameFlag + " has chosen to reveal their Facebook profile!", name, img, moment());
+		scrollToBottom();
+		//send special message to room
+		socket.emit('msg', {msg: nameFlag + " has chosen to reveal their Facebook profile!", 
+			user: name, img: img, special: true, link: localStorage.getItem('profileLink'),
+			realName: localStorage.getItem('userName'), picture: localStorage.getItem('picture')});
+
+	}));
 
 	textarea.keypress(function(e){
 
@@ -213,7 +273,7 @@ $(function(){
 			scrollToBottom();
 
 			// Send the message to the other person in the chat
-			socket.emit('msg', {msg: textarea.val(), user: name, img: img});
+			socket.emit('msg', {msg: textarea.val(), user: name, img: img, special: false});
 
 		}
 		// Empty the textarea
@@ -264,6 +324,37 @@ $(function(){
 		messageTimeSent.last().text(now.fromNow());
 	}
 
+	//Function that creates a special message (when user hits reveal)
+	function createChatSpecialMessage(msg,user,imgg,now){
+
+		var li = $(
+			'<li class=' + 'revelation' + '>'+
+				'<p></p>' +
+			'</li>');
+
+		// use the 'text' method to escape malicious user input
+		li.find('p').text(msg);
+		chats.append(li);
+	}
+
+	//Function that creates a facebook message when users mutually reveal
+	function createChatFacebookMessage(user1, user2, img1, img2, link1, link2){
+		var li = $(
+			'<li class=' + 'facebookMessage' + '>'+
+				'<div class="image">' +
+					'<a href="' + link2 + '" target="_blank">' + '<img src="' + img2 + '"/></a>' +
+					'<b></b>' +
+				'</div>' +
+				'<p></p>' +
+			'</li>');
+
+		// use the 'text' method to escape malicious user input
+		li.find('p').text("Hey ;) This is my real Facebook profile");
+		li.find('b').text(user2);
+
+		chats.append(li);
+	}
+
 	function scrollToBottom(){
 		$("html, body").animate({ scrollTop: $(document).height()-$(window).height() },1000);
 	}
@@ -283,9 +374,6 @@ $(function(){
 		}
 
 		else if(status === "inviteSomebody"){
-
-			// Set the invite link content
-			$("#link").text(window.location.href);
 
 			onConnect.fadeOut(1200, function(){
 				inviteSomebody.fadeIn(1200);
@@ -316,9 +404,12 @@ $(function(){
 
 		else if(status === "heStartedChatWithNoMessages") {
 
-			personInside.fadeOut(1200,function(){
-				noMessages.fadeIn(1200);
-				footer.fadeIn(1200);
+			inviteSomebody.fadeOut(120,function(){
+				left.fadeOut(1200,function(){
+					noMessages.fadeIn(1200);
+					footer.fadeIn(1200);
+					scrollToBottom();
+				})
 			});
 
 			friend = data.users[0];

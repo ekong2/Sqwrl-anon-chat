@@ -85,6 +85,8 @@ module.exports = function(app,io){
 				socket.username = data.user;
 				socket.room = data.id;
 				socket.avatar = gravatar.url(data.avatar, {s: '140', r: 'x', d: 'mm'});
+				//hashmap to hold the key value pairs for revelation
+				socket.reveals = {};
 
 				// Tell the person what he should use for an avatar
 				socket.emit('img', socket.avatar);
@@ -140,19 +142,34 @@ module.exports = function(app,io){
 
 		// Handle the sending of messages
 		socket.on('msg', function(data){
+			if (data.special){
+				// When the server receives a special message, it sends it to the other person in the room.
+				socket.broadcast.to(socket.room).emit('receive2', {msg: data.msg, user: data.user, img: data.img, 
+					link: data.link, realName: data.realName, picture: data.picture});
+			} else {
+				// When the server receives a normal message, it sends it to the other person in the room.
+				socket.broadcast.to(socket.room).emit('receive', {msg: data.msg, user: data.user, img: data.img});
+			}
+		});
 
-			// When the server receives a message, it sends it to the other person in the room.
-			socket.broadcast.to(socket.room).emit('receive', {msg: data.msg, user: data.user, img: data.img});
+		//will only reveal if both users hit reveal button
+		socket.on('revelation', function(data){
+			if (data.counter === 2) {
+				socket.emit('receive3');
+				socket.broadcast.to(socket.room).emit('receive3');
+			}
 		});
 	});
 
 // Initialize a new socket.io application, named 'waiting'
 	var waiting = io.of('/socket').on('connection', function (socket) {
 
-		//var faceID = [1, 2];
-		//var friendsID = [[4, 5, 2], [9]];
-		var faceID = [];
-		var friendsID = [];
+		//var waitingRoomFBids = [1, 2];
+		//var waitingRoomFriendList = [[4, 5, 2], [9]];
+
+		//waitingRoomFBids is an array of fb ID in the waiting room
+		var waitingRoomFBids = [];
+		var waitingRoomFriendList = [];
 		var sockets = [];
 
 		// When the client emits the 'load' event, reply with the 
@@ -173,25 +190,23 @@ module.exports = function(app,io){
 				//iterate through all connected clients in this namespace, collect all facebook ids in an array
 				for (var id in ns.connected) {
 					if(data.id) {
-						//console.log(ns.connected[id].room);
-						//console.log("push complete "+ ns.connected[id].room);
-						/*var index = ns.connected[id].rooms.indexOf(data.id);
-						console.log(index);
-						console.log(ns.connected[id].room[0]);
-						console.log("data id" + data.id + "\n");
-						console.log("waiting id" + data.waitID);*/
+						//store the newperson's socket object
 						var newPersonSocket = ns.connected[id];
 						var otherPersonSocket;
 
+						//store the new person's fb id and friend list
 						var newPersonId = ns.connected[id].room;
 						var newPersonFriendList = ns.connected[id].friendList;
-						//var matchedPerson = match(0, [3, 2], faceID, friendsID);
-						var matchedPerson = match(newPersonId, newPersonFriendList, faceID, friendsID);
+						//var matchedPerson = match(0, [3, 2], waitingRoomFBids, waitingRoomFriendList);
+
+						//call matchPerson on new person to see whether there is is eligible match
+						var matchedPerson = match(newPersonId, newPersonFriendList, waitingRoomFBids, waitingRoomFriendList);
 
 						if (matchedPerson) {
-							var matchedPersonIndex = faceID.indexOf(matchedPerson);
-							faceID.splice(matchedPersonIndex, 1);
-							friendsID.splice(matchedPersonIndex, 1);
+							var matchedPersonIndex = waitingRoomFBids.indexOf(matchedPerson);
+							//remove fbID, friendlist and socket from waiting room
+							waitingRoomFBids.splice(matchedPersonIndex, 1);
+							waitingRoomFriendList.splice(matchedPersonIndex, 1);
 							console.log(data.id + " is matched to " + matchedPerson);
 							otherPersonSocket = sockets[matchedPersonIndex];
 							sockets.splice(matchedPersonIndex, 1);
@@ -200,23 +215,27 @@ module.exports = function(app,io){
 							var roomId = matchedPerson;
 							newPersonSocket.emit('matchFound', {room: roomId});
 							otherPersonSocket.emit('matchFound', {room: roomId});
+							//leave the waitroom
+							newPersonSocket.leave(data.waitID);
+							otherPersonSocket.leave(data.waitID);
 							//console.log(ns);
 						}
 						else {							
-							faceID.push(ns.connected[id].room);
-							friendsID.push(ns.connected[id].friendList);
+							//add fbID, friendlist and socket into waiting room
+							waitingRoomFBids.push(ns.connected[id].room);
+							waitingRoomFriendList.push(ns.connected[id].friendList);
 							sockets.push(ns.connected[id]);
 						}						
 					}
 				}
 			}
 
-			/*console.log(faceID.length);
-			for (var k = 0; k < friendsID.length; k++) {
-			console.log("fb list" + friendsID[k]);
+			/*console.log(waitingRoomFBids.length);
+			for (var k = 0; k < waitingRoomFriendList.length; k++) {
+			console.log("fb list" + waitingRoomFriendList[k]);
 			}*/
 			
-			//matchingPeopleUp(faceID);
+			//matchingPeopleUp(waitingRoomFBids);
 			/*socket.leave(socket.room);
 
 			ns.connected[id].rooms[data.waitingID]
@@ -249,17 +268,20 @@ function match(newPersonId, newPersonFriendList, peopleList, friendList) {
     if (!newPersonFriendList)
     	return false;
     for(var i = 0; i<peopleList.length; i++) {
-        //check 1st degree
+        //check 1st degree to find match
         if(newPersonFriendList.indexOf(peopleList[i]) > -1) {
-            //MATCH: newPerson and peopleList[i]
+        	//looks through new friendlist and see whether anyone matches each person in waiting room
+        	//return 1st degree match fb id
             return peopleList[i];
         }
         else {
+        	//the friendlist of each person in the waiting room
         	var otherPersonsFriends = friendList[i];
+        	//loop through newPersonFriendList and otherPersonFriendList and if match
+        	//then there is a 2nd degree connection. Match found!
             for(var j = 0; j < newPersonFriendList.length; j++) {
             	for (var k = 0; k < otherPersonsFriends.length; k++) {
             		if(newPersonFriendList[j]== otherPersonsFriends[k]) {
-                     //MATCH: newPerson and peopleList[i]
                     return peopleList[i];
                 }
                 }

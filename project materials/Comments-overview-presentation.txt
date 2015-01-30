@@ -1,0 +1,12 @@
+Group 5,
+
+Good work on the presentation. You guys nicely put forth your reasons for developing
+a web app to anonymously chat with facebook friends (1st and 2nd degree). I particularily 
+liked that you decided to do a live demo. I hope you are able to soon grasp and integrate
+the graph api, as it seems to be absolutely essential part for your idea.
+
+Also, another point from the QnA, do try to look into having a global Blacklist/Blockedlist
+for users that are reported negatively by many users. Sort of like 'Report' on Facebook.
+It could be a nice feature.
+
+Total Score: 99/100

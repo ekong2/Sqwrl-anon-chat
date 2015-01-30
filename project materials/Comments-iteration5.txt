@@ -1,0 +1,22 @@
+Group 5,
+
+You do not have an Iteration plan for this iteration updated on the website.
+
+Also, you have only one single commit since the last iteration and it seems you 
+haven't made much progress over the last one. 
+
+It looks like you have tried to provide persistence for the blacklist users using
+node-postgres, but you are lacking any documentation about the same. I guess you 
+might find this helpful:
+https://github.com/brianc/node-postgres/wiki/Testing
+
+But, again I still don't see much effort from your end on Testing. You need to start
+working on writing test cases ASAP.
+
+Other than that, there was much you could have worked on for this iteration as you
+guys mentioned in the Future plans for Iteration 5 previously like polishing the 
+interface, etc.
+
+Overall, you guys need to put in a lot more work for the final iteration.
+
+Total Score: 82/100

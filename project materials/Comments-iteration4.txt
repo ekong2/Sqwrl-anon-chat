@@ -1,0 +1,22 @@
+Group 5,
+
+First of all, good to see you making progress. It is nice that you have started 
+integrating Facebook API in your application. But I am not able to use the
+Facebook login - it gives error "App Not Setup: The developers of this app have not 
+set up this app properly for Facebook Login." Assuming some problem in my heroku set up,
+I also tried using it on your sqwrl.herokuapp.com, but it still gives me error.
+
+This is one of the reasons we have been stressing on writing test cases as you go along.
+I still do not really see any significant effort from your side reagrding test cases.
+Please look into some framework according to your needs.
+
+I noticed the following for email address validation:
+
+function isValid(thatemail) {
+		var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+		return re.test(thatemail);
+    }
+
+It's generally a bad idea to attempt to validate e-mails this way.  There's a good article here: http://girders.org/blog/2013/01/31/dont-rfc-validate-email-addresses/  The RFC itself is here: https://tools.ietf.org/html/rfc2822  The regex you have excludes many valid e-mail addresses.  For the most part, validation should just consist of ensuring the string contains an "@".
+
+Total Score: 93/100

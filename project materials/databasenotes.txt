@@ -1,0 +1,56 @@
+Dependencies must include
+"pg": "2.x",
+
+Add database to server by
+heroku addons:add heroku-postgresql:hobby-dev
+Sets DATABASE_URL environment variable. Check via heroku config
+
+Initialize the database with
+heroku pg:psql
+And then issue commands. So, for instance, a small version of our table would be
+CREATE TABLE users (oid INTEGER, fbid INTEGER)
+CREATE TABLE blacklists (oid INTEGER, fbid INTEGER)
+So that, as new users join us, we basically do user.oid = idcounter++
+The way that blacklists works is that, when a user adds a person to their blacklist, it just adds a new row in that table. When we check our blacklist, we just get all rows from the blacklists table where oid=user.oid and then make sure that we don't match with any of the resulting fbid's.
+
+
+
+So then you'd have like
+var pg = require('pg');
+pg.connect(process.env.DATABASE_URL, function(err, client, done){});
+Where that function is called with the results of attempting to connect to the database.
+Then in that you could do
+client.query('SELECT * FROM test_table', function(err, result){});
+Where THAT function gets, again, the results of that query. Before you work with it, however, you need to call the done(); from the pg.connect.
+Then you can do work on result. Like, result.rows.
+
+The following example will make it so that, going to our website's /db page, will print the contents of test_table formatted as JSON.
+var pg = require('pg');
+app.get('/db', function (request, response) {
+  pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+    client.query('SELECT * FROM test_table', function(err, result) {
+      done();
+      if (err)
+       { console.error(err); response.send("Error " + err); }
+      else
+       { response.send(result.rows); }
+    });
+  });
+})
+
+So, as another example, for loading someone's blacklist...
+function loadBlacklist(yourUserObject){
+  yourOid = yourUserObject.getFbid();
+  pg.connect(process.env.DATABASE_URL, function(err, client, done){
+    client.query('SELECT fbid FROM blacklists WHERE oid='+yourOid, function(err, result){
+      done();
+      if (err){console.error(err); response.send("Error " + err);}
+      else
+      { yourUserObject.setBlacklist(result.rows); }
+    });
+  });
+}
+Because result.rows is an array. Which actually in this case would be rather ugly, because I believe it would look like
+result.rows[0].fbid = theirfbid
+result.rows[1].fbid = anotherfbid
+etc. So if we just had SELECT *, then we would have ALSO gotten the user's oid.

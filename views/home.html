@@ -139,12 +139,15 @@
 	    		localStorage.setItem('userEmail', resp.email);
 	    		localStorage.setItem('userName', resp.first_name + ' ' + resp.last_name);
 	    		localStorage.setItem('facebookID', resp.id);
+	    		localStorage.setItem('profileLink', resp.link);
 		        console.log('Successful login for: ' + resp.name);
 		        document.getElementById('status').innerHTML = "Thanks for logging into Facebook!";
 		        document.getElementById('create').style.display =
 		        "block";
 		    }
 	    });
+
+	    //get the user's friends
 	    FB.api('/me/friends', function(response){
 	    	if (response) {
 	    		var friendIDs = [];
@@ -155,6 +158,20 @@
 	    		console.log(friendIDs);
 	    	}
 	    });
+
+	    //get the user's facebook profile picture, save it to localstorage
+	    FB.api('/me/picture', 
+		    {
+	        "redirect": false,
+	        "height": "200",
+	        "type": "normal",
+	        "width": "200"
+	    	},
+    		function (response) {
+	      		if (response && !response.error) {
+	        		localStorage.setItem('picture', response.data.url);
+	      		}
+    	});
 	  }
 
 	  FB.login(function(response) {
