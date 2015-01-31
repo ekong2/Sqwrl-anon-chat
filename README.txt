@@ -1,36 +1,26 @@
-Commands after every change you do:
+# Sqwrl Anonymous Chat [1.1.0]
+***
 
-git status
-git add -A
-git commit -m 'message'
-git tag tagname
-git push --tags -u origin master
-git push heroku master
-heroku open
+An anonymous web chat application that lets you connect with your Facebook first and second degree friends. 
+Runs on node.js
 
-if there's a warning on heroku about some changes
-not being pushed, then simply do:
+**Still under development with some minor bugs.**
 
-git pull heroku master
-then:
-git push heroku master
+### Demo
 
-For windows-----------------------------------------------------------
-Otherwise if you wish to automate it then we have to create a script:
+You can find a working demo [here](https://sqwrl.herokuapp.com).
 
-go to the directory where gitbash resides in.
-go to the subdirectory called bin
-create a file with no extension (this is called a script) named git-2push
-type this into the file:
+### Updates
 
-#!/bin/bash -e
-    git push origin master
-    git push heroku master
+As of 1.1.0, a reveal button has been added.
 
-save it.
+### Usage
 
-whenever youre on the repo, type in git-2push to execute the script
-Done.
+Feel free to use, modify or share this in any way! Just remember there are some minor bugs in development.
 
-For Mac--------------------------------------------------------------
-dunno? maybe the same? otherwise stack overflow
+#### Contributors
+
+- Eddie Kong
+- Darren Wong
+- John Lee
+Many thanks to Nick Anastasov for his tutorial!
